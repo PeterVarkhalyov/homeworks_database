@@ -21,6 +21,6 @@ homeworks_database/
 
 ## Домашнее задание № 1 (homework_1)
 Реализация условий **Домашней работы № 1** расположены в папке `homework_1`.
-Условия и реализация описаны в [link](https://github.com/PeterVarkhalyov/homeworks_database/tree/main/homework_1)`homework_1/README.md`.
+Условия и реализация описаны в [homework_1/README.md](https://github.com/PeterVarkhalyov/homeworks_database/tree/main/homework_1).
 
 
