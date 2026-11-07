@@ -91,7 +91,7 @@ first_name,last_name,title,birth_date,notes
 Для сущности `employee` создана таблица `employees`, следующей структуры:
 | FIELD  | TYPE    | DESCRIPT   |
 |--------|---------|------------|
-| employee_id  | SERIAL  | Идетификатор записи. Поле является PRIVATE KEY. |
+| employee_id  | SERIAL  | Идентификатор записи. Поле является PRIVATE KEY. |
 | first_name | TEXT | Имя сотрудника. Не может быть пустым. |
 | last_name | TEXT | Фамилия сотрудника. Не может быть пустым. |
 | title | TEXT | Должность, которую щанимает сотрудник. Не может быть пустым. |
@@ -122,7 +122,7 @@ customer_id, company_name, contact_name
 Для сущности `customer` создана таблица `customers`, следующей структуры:
 | FIELD  | TYPE    | DESCRIPT   |
 |--------|---------|------------|
-| customer_id  | VARCHAR(255)  | Идетификатор записи. Поле является PRIVATE KEY. |
+| customer_id  | VARCHAR(255)  | Идентификатор записи. Поле является PRIVATE KEY. |
 | company_name | TEXT | Наименование пользователя. Не может быть пустым. |
 | contact_name | TEXT | Контактное лицо пользователя. |
 
@@ -146,9 +146,9 @@ order_id, customer_id, employee_id, order_date, ship_city
 Для сущности `order` создана таблица `orders`, следующей структуры:
 | FIELD  | TYPE    | DESCRIPT   |
 |--------|---------|------------|
-| order_id   | INT  | Идетификатор записи. Поле является PRIVATE KEY. |
+| order_id   | INT  | Идентификатор записи. Поле является PRIVATE KEY. |
 | customer_id  | VARCHAR(255) | Идентификатор пользователя, которому принадлежит заказ. Не может быть пустым. Является FOREN KEY связи с таблицей `customers`. Связь One-To-Many. |
-| employee_id  | INT | Идетнификатор сотрудника, который принял заказ. Не может быть пустым. Является FOREN KEY связи с таблицей `employees`. Связь One-To-Many. |
+| employee_id  | INT | Идентификатор сотрудника, который принял заказ. Не может быть пустым. Является FOREN KEY связи с таблицей `employees`. Связь One-To-Many. |
 | order_date | DATE | Дата заказа. Не может быть пустым. |
 | ship_city | TEXT | Город доставки заказа. Не может быть пустым. | 
 
