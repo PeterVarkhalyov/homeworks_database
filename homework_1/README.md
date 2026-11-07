@@ -89,7 +89,6 @@ first_name,last_name,title,birth_date,notes
 ```
 
 Для сущности `employee` создана таблица `employees`, следующей структуры:
-|--------|---------|------------|
 | FIELD  | TYPE    | DESCRIPT   |
 |--------|---------|------------|
 | employee_id  | SERIAL  | Идетификатор записи. Поле является PRIVATE KEY. |
@@ -98,7 +97,6 @@ first_name,last_name,title,birth_date,notes
 | title | TEXT | Должность, которую щанимает сотрудник. Не может быть пустым. |
 | birth_date | DATE | День рождения сотрудника. Не может быть пустым. |
 | notes | TEXT | Пометки. |
-|-------|------|----------|
 
 Скрипт создания таблицы:
 ``` SQL 
@@ -122,13 +120,11 @@ customer_id, company_name, contact_name
 ```
 
 Для сущности `customer` создана таблица `customers`, следующей структуры:
-|--------|---------|------------|
 | FIELD  | TYPE    | DESCRIPT   |
 |--------|---------|------------|
 | customer_id  | VARCHAR(255)  | Идетификатор записи. Поле является PRIVATE KEY. |
 | company_name | TEXT | Наименование пользователя. Не может быть пустым. |
 | contact_name | TEXT | Контактное лицо пользователя. |
-|-------|------|----------|
 
 Скрипт создания таблицы:
 ``` SQL 
@@ -148,7 +144,6 @@ order_id, customer_id, employee_id, order_date, ship_city
 ```
 
 Для сущности `order` создана таблица `orders`, следующей структуры:
-|--------|---------|------------|
 | FIELD  | TYPE    | DESCRIPT   |
 |--------|---------|------------|
 | order_id   | INT  | Идетификатор записи. Поле является PRIVATE KEY. |
@@ -156,7 +151,6 @@ order_id, customer_id, employee_id, order_date, ship_city
 | employee_id  | INT | Идетнификатор сотрудника, который принял заказ. Не может быть пустым. Является FOREN KEY связи с таблицей `employees`. Связь One-To-Many. |
 | order_date | DATE | Дата заказа. Не может быть пустым. |
 | ship_city | TEXT | Город доставки заказа. Не может быть пустым. | 
-|-------|------|----------|
 
 Скрипт создания таблицы:
 ``` SQL 
