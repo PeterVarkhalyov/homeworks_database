@@ -10,7 +10,7 @@ CREATE TABLE public.employees (
 CREATE TABLE public.customers (
     customer_id VARCHAR(255) PRIMARY KEY,
     company_name TEXT NOT NULL,
-    contact_name TEXT
+    contact_name TEXT NOT NULL
 );
 
 CREATE TABLE public.orders (

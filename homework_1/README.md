@@ -1,28 +1,53 @@
 # Домашняя работа № 1
 
-## Структура
+## Структура проекта
+
 ```text
-homeworks_database/
-├── homework_1/
-│   ├── north_data/
-│   │   ├── customers_data.csv
-│   │   ├── employees_data.csv
-│   │   └── orders_data.csv
-│   ├── create_tables.sql
-│   ├── main.py
-│   └── README.md
-│ ...
+homework_1/
+├── north_data/
+│   ├── customers_data.csv
+│   ├── employees_data.csv
+│   └── orders_data.csv
+├── src/
+│   ├── __init__.py
+│   ├── customers.py
+│   ├── employees.py
+│   ├── logging_config.py
+│   ├── orders.py
+│   └── reads.py
+├── tests/
+│   ├── conftest.py
+│   ├── test_logging_config.py
+│   ├── test_main.py
+│   ├── test_models.py
+│   └── test_reads.py
+├── logs/
+│   ├── customers.log
+│   ├── employees.log
+│   ├── main.log
+│   ├── orders.log
+│   └── reads.log
+├── htmlcov/                  # создаётся при формировании HTML-отчёта
+├── .env                      # локальные параметры подключения, не хранится в Git
+├── .env.example              # пример параметров подключения
+├── create_tables.sql
+├── main.py
+└── README.md
 ```
+
 ### Описание элементов структуры
-- `customers_data.csv` - содержит данные для 
-  заполнения таблицы, связанной с сущностью `customer`
-- `employees_data.csv` - содержит данные для 
-  заполнения таблицы, связанной с сущностью `employee`
-- `orders_data.csv` - содержит данные для 
-  заполнения таблицы, связанной с сущностью `order`
-- `create_tables.sql` - содержит SQL-код создания таблиц
-- `main.py` - содержит Python-код реализации условий **Домашней работы № 1**
-- `README.md` - содержит описание реализации **Домашней работы № 1**
+
+- `north_data` — исходные CSV-файлы с данными о клиентах, сотрудниках и заказах;
+- `src` — пакет с моделями сущностей, чтением файлов и общей настройкой логирования;
+- `tests` — тесты `main.py`, моделей, чтения файлов и настройки логирования;
+- `logs` — журналы работы модулей;
+- `htmlcov` — HTML-отчёт о покрытии кода тестами;
+- `create_tables.sql` — SQL-код создания таблиц;
+- `.env` — локальные параметры подключения к PostgreSQL (не добавляется в Git);
+- `.env.example` — пример заполнения параметров подключения;
+- `main.py` — скрипт загрузки данных из `north_data` в PostgreSQL;
+- `README.md` — описание задания и его реализации.
+
 
 ## Условия 
 - Установка Postgres
@@ -131,14 +156,14 @@ customer_id, company_name, contact_name
 |--------|---------|------------|
 | customer_id  | VARCHAR(255)  | Идентификатор записи. Поле является PRIMARY KEY. |
 | company_name | TEXT | Наименование компании клиента. Не может быть пустым. |
-| contact_name | TEXT | Контактное лицо клиента. |
+| contact_name | TEXT | Контактное лицо клиента. Не может быть пустым. |
 
 Скрипт создания таблицы:
 ``` SQL 
 CREATE TABLE public.customers (
     customer_id VARCHAR(255) PRIMARY KEY,
     company_name TEXT NOT NULL,
-    contact_name TEXT
+    contact_name TEXT NOT NULL
 );
 ```
 
@@ -184,3 +209,123 @@ CREATE INDEX idx_orders_employee_id
 
 ### Результат
 SQL-код создания таблиц записан в файл `create_tables.sql`.
+
+## Модули
+
+### `main.py`
+
+Содержит конкретные классы `NorthEmployee`, `NorthCustomer` и `NorthOrder`, которые проверяют значения CSV и
+преобразуют их в типизированные объекты и кортежи для записи в БД.
+
+Работа с PostgreSQL разделена на функции:
+
+- `get_db_config` — читает и проверяет параметры подключения из `.env`;
+- `connect_to_database` — создаёт соединение через `psycopg2`;
+- `insert_employees` — добавляет сотрудников в `public.employees`; значение `employee_id` назначается PostgreSQL
+  через sequence `employees_employee_id_seq`;
+- `insert_customers` — добавляет или обновляет клиентов по `customer_id`;
+- `insert_orders` — добавляет или обновляет заказы по `order_id`.
+
+Таблицы заполняются в порядке `employees` → `customers` → `orders` в одной транзакции. При ошибке изменения
+откатываются, а соединение закрывается в блоке `finally`. Повторный запуск добавляет новые строки сотрудников, так как
+у таблицы `employees` нет уникального ограничения, кроме автоматически создаваемого `employee_id`.
+
+### Модели сущностей
+
+- `src/employees.py` — абстрактный класс `Employee`;
+- `src/customers.py` — абстрактный класс `Customer`;
+- `src/orders.py` — абстрактный класс `Order`.
+
+Общие методы моделей загружают CSV через `reads.py`, пропускают ошибочные записи и фиксируют результат в отдельных
+логах. Абстрактные методы `from_record` и `from_rows` реализуются конкретными классами в `main.py`.
+
+Классы экспортируются через `src/__init__.py`:
+
+```python
+from src import Customer, Employee, Order
+```
+
+### `src/reads.py`
+
+Содержит функции загрузки данных из файлов:
+
+- `get_transactions_from_csv(file_path, delimiter=";")` — читает CSV-файл с указанным разделителем, пропускает
+  пустые строки и возвращает список словарей;
+- `get_transactions_from_xls(file_path)` — читает лист `Отчет по операциям` из Excel-файла, пропускает пустые строки
+  и возвращает список словарей;
+- `get_fields_from_json(file_path)` — читает JSON-файл, корневым элементом которого должен быть объект или массив.
+
+При отсутствии файла, ошибке кодировки или некорректном содержимом функции возвращают пустой список. Сведения о
+работе и ошибках записываются в `logs/reads.log`.
+
+### `src/logging_config.py`
+
+Функция `get_file_logger` централизованно создаёт файловые логгеры в каталоге `logs`. При первом обращении в рамках
+запуска соответствующий лог открывается в режиме перезаписи. Повторные вызовы используют тот же обработчик.
+
+### Настройка подключения и запуск
+
+В файлах `.env` и `.env.example` используются параметры:
+
+```dotenv
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=north
+DB_USER=postgres
+DB_PASSWORD=your_postgresql_password
+```
+
+Перед запуском установите зависимости:
+
+```powershell
+poetry install
+```
+
+Затем замените значение `DB_PASSWORD` в `homework_1/.env` на пароль локального пользователя PostgreSQL. После
+создания таблиц скриптом `create_tables.sql` выполните из корня проекта:
+
+```powershell
+poetry run python homework_1/main.py
+```
+
+## Тестирование
+
+Тесты находятся в `homework_1/tests` и проверяют:
+
+- успешное чтение CSV, Excel и JSON;
+- использование пользовательского разделителя CSV;
+- пропуск пустых строк и записей;
+- обработку пустых, отсутствующих и повреждённых файлов;
+- отклонение скалярного корневого элемента JSON;
+- загрузку моделей и пропуск ошибочных записей;
+- преобразование сотрудников, клиентов и заказов в строки таблиц;
+- создание и повторное использование файловых логгеров;
+- чтение и проверку параметров подключения из `.env`;
+- успешные и ошибочные сценарии подключения;
+- пакетную запись всех трёх таблиц через подменённое соединение;
+- фиксацию транзакции, обработку ошибок и закрытие соединения.
+
+Для запуска всех тестов выполните из корня проекта:
+
+```powershell
+poetry run pytest
+```
+
+Для запуска тестов и формирования HTML-отчёта о покрытии используйте:
+
+```powershell
+poetry run pytest --cov-report=html:homework_1/htmlcov
+```
+
+Отчёт сохраняется в папке `homework_1/htmlcov`. Для просмотра откройте файл `homework_1/htmlcov/index.html` в
+браузере. Настройки `pyproject.toml` включают в измерение `main.py` и весь пакет `src`.
+
+Текущий результат:
+
+```text
+49 passed
+367 statements — 100%
+50 branches — 100%
+```
+
+Минимально допустимое покрытие — 100%.
